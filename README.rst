@@ -15,5 +15,5 @@ Usage:
     from exoscale_auth import ExoscaleAuth
 
     auth = ExoscaleAuth('my-key', 'my-secret')
-    response = requests.get('https://portal.exoscale.ch/api/account',
+    response = requests.get('https://portal.exoscale.com/api/account',
                             auth=auth)
