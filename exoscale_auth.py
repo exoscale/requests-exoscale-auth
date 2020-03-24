@@ -3,7 +3,9 @@ from __future__ import unicode_literals
 import hashlib
 import hmac
 
-from datetime import datetime
+from base64 import standard_b64encode
+from datetime import datetime, timedelta, timezone
+from urllib.parse import urlparse, parse_qs
 
 from requests.auth import AuthBase
 
@@ -28,4 +30,56 @@ class ExoscaleAuth(AuthBase):
             'Exoscale-Date': date,
             'Authorization': auth,
         })
+        return request
+
+class ExoscaleV2Auth(AuthBase):
+    def __init__(self, key, secret):
+        self.key = key
+        self.secret = secret.encode('utf-8')
+
+    def __call__(self, request):
+        auth_header = u'EXO2-HMAC-SHA256 credential={}'.format(self.key)
+
+        # Request method/URL path
+        msg = '{method} {path}\n'.format(
+            method=request.method,
+            path=urlparse(request.url).path)
+
+        # Request body
+        if request.body:
+            msg += body.encode('utf-8')
+        msg += '\n'
+
+        # Request query string parameters
+        # Important: this is order-sensitive, we have to have to sort
+        # parameters alphabetically to ensure signed # values match the
+        # names listed in the "signed-query-args=" signature pragma.
+        params = parse_qs(urlparse(request.url).query)
+        signed_params = sorted(params.keys())
+        for p in signed_params:
+            if len(params[p]) != 1:
+                continue
+            msg += params[p][0]
+        msg += '\n'
+        if len(signed_params) > 0:
+            auth_header += ',signed-query-args={}'.format(';'.join(signed_params))
+
+        # Request headers -- none at the moment
+        # Note: the same order-sensitive caution for query string parameters
+        # applies to headers.
+        msg += '\n'
+
+        # Request expiration date (UNIX timestamp, no line return)
+        expiration = int((datetime.now(tz=timezone.utc) + timedelta(minutes=10)).timestamp())
+        msg += str(expiration)
+        auth_header += ',expires=' + str(expiration)
+
+        signature = hmac.new(self.secret,
+                             msg=msg.encode('utf-8'),
+                             digestmod=hashlib.sha256).digest()
+
+        auth_header += ',signature=' + str(standard_b64encode(bytes(signature)), 'utf-8')
+
+        request.headers.update({'Authorization': auth_header})
+
         return request
