@@ -2,9 +2,9 @@ from __future__ import unicode_literals
 
 import hashlib
 import hmac
+import time
 
 from base64 import standard_b64encode
-from datetime import datetime, timedelta, timezone
 from urllib.parse import urlparse, parse_qs
 
 from requests.auth import AuthBase
@@ -39,11 +39,11 @@ class ExoscaleV2Auth(AuthBase):
         self.secret = secret.encode('utf-8')
 
     def __call__(self, request):
-        expiration = datetime.now(tz=timezone.utc) + timedelta(minutes=10)
-        self._sign_request(request, expiration)
+        expiration_ts = int(time.time() + 10 * 60)
+        self._sign_request(request, expiration_ts)
         return request
 
-    def _sign_request(self, request, expiration):
+    def _sign_request(self, request, expiration_ts):
         auth_header = 'EXO2-HMAC-SHA256 credential={}'.format(self.key)
         msg_parts = []
 
@@ -75,10 +75,9 @@ class ExoscaleV2Auth(AuthBase):
         # applies to headers.
         msg_parts.append('')
 
-        # Request expiration date (UNIX timestamp, no line return)
-        ts = str(int(expiration.timestamp()))
-        msg_parts.append(ts)
-        auth_header += ',expires=' + ts
+        # Request expiration date (UNIX timestamp)
+        msg_parts.append(str(expiration_ts))
+        auth_header += ',expires=' + str(expiration_ts)
 
         msg = '\n'.join(msg_parts)
         signature = hmac.new(

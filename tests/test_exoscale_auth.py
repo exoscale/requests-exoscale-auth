@@ -11,8 +11,7 @@ _API_SECRET = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
 
 
 class TestExoscaleV2Auth:
-    expiration = datetime(2077, 1, 1, tzinfo=timezone.utc)
-    expiration_ts = str(int(expiration.timestamp()))
+    expiration_ts = int(datetime(2077, 1, 1, tzinfo=timezone.utc).timestamp())
 
     def test_init(self):
         auth = ExoscaleV2Auth(key=_API_KEY, secret=_API_SECRET)
@@ -22,11 +21,11 @@ class TestExoscaleV2Auth:
     def test_sign_request_no_params(self):
         auth = ExoscaleV2Auth(key=_API_KEY, secret=_API_SECRET)
         req = requests.Request('GET', 'https://api.exoscale.com/v2/zone').prepare()
-        auth._sign_request(req, self.expiration)
+        auth._sign_request(req, self.expiration_ts)
         assert 'Authorization' in req.headers
         assert req.headers['Authorization'] == (
             'EXO2-HMAC-SHA256 credential=' + _API_KEY
-            + ',expires=' + self.expiration_ts
+            + ',expires=' + str(self.expiration_ts)
             + ',signature=Ntbq/p0HVmA3Zg1HHY+Lq1vjFGi7HeMrrgXDS5jRNlY='
         )
 
@@ -35,11 +34,11 @@ class TestExoscaleV2Auth:
         req = requests.Request(
             'GET', 'https://api.exoscale.com/v2/zone', params={'k1': 'v1', 'k2': 'v2'}
         ).prepare()
-        auth._sign_request(req, self.expiration)
+        auth._sign_request(req, self.expiration_ts)
         assert 'Authorization' in req.headers
         assert req.headers['Authorization'] == (
             'EXO2-HMAC-SHA256 credential=' + _API_KEY
             + ',signed-query-args=k1;k2'
-            + ',expires=' + self.expiration_ts
+            + ',expires=' + str(self.expiration_ts)
             + ',signature=iqOBz13+44L5j0uJclE8hmUhQQcvtCSoPEOXYK6liqY='
         )
