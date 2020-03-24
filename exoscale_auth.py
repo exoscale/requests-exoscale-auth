@@ -61,13 +61,13 @@ class ExoscaleV2Auth(AuthBase):
         # parameters alphabetically to ensure signed # values match the
         # names listed in the 'signed-query-args=' signature pragma.
         params = parse_qs(urlparse(request.url).query)
-        signed_params = sorted(params.keys())
+        signed_params = sorted(params)
         for p in signed_params:
             if len(params[p]) != 1:
                 continue
             msg += params[p][0]
         msg += '\n'
-        if len(signed_params) > 0:
+        if signed_params:
             auth_header += ',signed-query-args={}'.format(';'.join(signed_params))
 
         # Request headers -- none at the moment
@@ -88,5 +88,4 @@ class ExoscaleV2Auth(AuthBase):
             standard_b64encode(bytes(signature)), 'utf-8'
         )
 
-        request.headers.update({'Authorization': auth_header})
-
+        request.headers['Authorization'] = auth_header
