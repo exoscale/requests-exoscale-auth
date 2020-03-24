@@ -45,16 +45,15 @@ class ExoscaleV2Auth(AuthBase):
 
     def _sign_request(self, request, expiration):
         auth_header = 'EXO2-HMAC-SHA256 credential={}'.format(self.key)
+        msg_parts = []
 
         # Request method/URL path
-        msg = '{method} {path}\n'.format(
+        msg_parts.append('{method} {path}'.format(
             method=request.method, path=urlparse(request.url).path
-        )
+        ))
 
         # Request body
-        if request.body:
-            msg += body.encode('utf-8')
-        msg += '\n'
+        msg_parts.append(body.encode('utf-8') if request.body else u'')
 
         # Request query string parameters
         # Important: this is order-sensitive, we have to have to sort
@@ -62,24 +61,26 @@ class ExoscaleV2Auth(AuthBase):
         # names listed in the 'signed-query-args=' signature pragma.
         params = parse_qs(urlparse(request.url).query)
         signed_params = sorted(params)
+        params_values = []
         for p in signed_params:
             if len(params[p]) != 1:
                 continue
-            msg += params[p][0]
-        msg += '\n'
+            params_values.append(params[p][0])
+        msg_parts.append(''.join(params_values))
         if signed_params:
             auth_header += ',signed-query-args={}'.format(';'.join(signed_params))
 
         # Request headers -- none at the moment
         # Note: the same order-sensitive caution for query string parameters
         # applies to headers.
-        msg += '\n'
+        msg_parts.append('')
 
         # Request expiration date (UNIX timestamp, no line return)
         ts = str(int(expiration.timestamp()))
-        msg += ts
+        msg_parts.append(ts)
         auth_header += ',expires=' + ts
 
+        msg = '\n'.join(msg_parts)
         signature = hmac.new(
             self.secret, msg=msg.encode('utf-8'), digestmod=hashlib.sha256
         ).digest()
