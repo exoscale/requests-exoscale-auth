@@ -10,7 +10,7 @@ with open("requirements.test.txt", "r", encoding="utf-8") as f:
 
 setup(
     name='requests-exoscale-auth',
-    version='1.0',
+    version='1.1',
     url='https://github.com/exoscale/requests-exoscale-auth',
     license='BSD',
     author=u'Exoscale',
