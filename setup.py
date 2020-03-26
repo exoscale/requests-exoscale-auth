@@ -4,6 +4,10 @@ from setuptools import setup
 with open('README.rst', 'r') as f:
     long_description = f.read()
 
+TESTS_REQUIRE = []
+with open("requirements.test.txt", "r", encoding="utf-8") as f:
+    TESTS_REQUIRE = list(i.rstrip() for i in f.readlines())
+
 setup(
     name='requests-exoscale-auth',
     version='1.0',
@@ -28,4 +32,5 @@ setup(
     install_requires=(
         'requests',
     ),
+    tests_require=[TESTS_REQUIRE],
 )

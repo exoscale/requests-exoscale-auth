@@ -1,0 +1,13 @@
+dist: bionic
+
+language: python
+python:
+  - 2.7
+  - 3.7
+  - 3.8
+
+install:
+  - pip install -r requirements.test.txt -e .
+
+script:
+  - pytest -x -s -vvv tests/
