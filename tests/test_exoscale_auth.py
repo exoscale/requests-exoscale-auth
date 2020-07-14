@@ -1,10 +1,8 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-import pytest
-import requests
 from datetime import datetime, timezone
-from exoscale_auth import *
+
+from exoscale_auth import ExoscaleV2Auth
+
+import requests
 
 _API_KEY = 'EXOxxxxxxxxxxxxxxxxxxxxxxxx'
 _API_SECRET = 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'
@@ -20,7 +18,10 @@ class TestExoscaleV2Auth:
 
     def test_sign_request_no_params(self):
         auth = ExoscaleV2Auth(key=_API_KEY, secret=_API_SECRET)
-        req = requests.Request('GET', 'https://api.exoscale.com/v2/zone').prepare()
+        req = requests.Request(
+            'GET',
+            'https://api.exoscale.com/v2/zone',
+        ).prepare()
         auth._sign_request(req, self.expiration_ts)
         assert 'Authorization' in req.headers
         assert req.headers['Authorization'] == (
@@ -32,7 +33,9 @@ class TestExoscaleV2Auth:
     def test_sign_request_with_params(self):
         auth = ExoscaleV2Auth(key=_API_KEY, secret=_API_SECRET)
         req = requests.Request(
-            'GET', 'https://api.exoscale.com/v2/zone', params={'k1': 'v1', 'k2': 'v2'}
+            'GET',
+            'https://api.exoscale.com/v2/zone',
+            params={'k1': 'v1', 'k2': 'v2'},
         ).prepare()
         auth._sign_request(req, self.expiration_ts)
         assert 'Authorization' in req.headers
@@ -41,4 +44,19 @@ class TestExoscaleV2Auth:
             + ',signed-query-args=k1;k2'
             + ',expires=' + str(self.expiration_ts)
             + ',signature=iqOBz13+44L5j0uJclE8hmUhQQcvtCSoPEOXYK6liqY='
+        )
+
+    def test_sign_post(self):
+        auth = ExoscaleV2Auth(key=_API_KEY, secret=_API_SECRET)
+        req = requests.Request(
+            'POST',
+            'https://api.exoscale.com/v2/load-balancer',
+            json={'name': 'foo'},
+        ).prepare()
+        auth._sign_request(req, self.expiration_ts)
+        assert 'Authorization' in req.headers
+        assert req.headers['Authorization'] == (
+            'EXO2-HMAC-SHA256 credential=' + _API_KEY
+            + ',expires=' + str(self.expiration_ts)
+            + ',signature=duldkM0+pgWRtUznj0rMrZauzsYOtSVLn1LCGcs7CcE='
         )
