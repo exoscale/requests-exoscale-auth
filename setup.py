@@ -14,20 +14,21 @@ setup(
     url='https://github.com/exoscale/requests-exoscale-auth',
     license='BSD',
     author=u'Exoscale',
+    author_email=u'contact@exoscale.com',
     description=('Exoscale APIs support for Python-Requests.'),
     long_description=long_description,
     py_modules=('exoscale_auth',),
     zip_safe=False,
     include_package_data=True,
     platforms='any',
-    classifiers=(
+    classifiers=[
         'Intended Audience :: Developers',
         'Intended Audience :: System Administrators',
         'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 3',
-    ),
+    ],
     install_requires=(
         'requests',
     ),
