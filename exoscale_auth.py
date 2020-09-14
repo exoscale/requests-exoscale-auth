@@ -53,7 +53,7 @@ class ExoscaleV2Auth(AuthBase):
         ))
 
         # Request body
-        msg_parts.append(body.encode('utf-8') if request.body else u'')
+        msg_parts.append(str(request.body or b'', 'utf-8') if hasattr(request, 'body') else u'')
 
         # Request query string parameters
         # Important: this is order-sensitive, we have to have to sort
