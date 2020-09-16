@@ -3,9 +3,9 @@ from __future__ import unicode_literals
 import hashlib
 import hmac
 import time
-
 from base64 import standard_b64encode
-from urllib.parse import urlparse, parse_qs
+from datetime import datetime
+from urllib.parse import parse_qs, urlparse
 
 from requests.auth import AuthBase
 
@@ -50,14 +50,10 @@ class ExoscaleV2Auth(AuthBase):
         # Request method/URL path
         msg_parts.append('{method} {path}'.format(
             method=request.method, path=urlparse(request.url).path
-        ))
+        ).encode('utf-8'))
 
         # Request body
-        if request.body is not None:
-            body = request.body.decode('utf-8')
-        else:
-            body = ''
-        msg_parts.append(body)
+        msg_parts.append(request.body if request.body else b'')
 
         # Request query string parameters
         # Important: this is order-sensitive, we have to have to sort
@@ -70,22 +66,22 @@ class ExoscaleV2Auth(AuthBase):
             if len(params[p]) != 1:
                 continue
             params_values.append(params[p][0])
-        msg_parts.append(''.join(params_values))
+        msg_parts.append(''.join(params_values).encode('utf-8'))
         if signed_params:
             auth_header += ',signed-query-args={}'.format(';'.join(signed_params))
 
         # Request headers -- none at the moment
         # Note: the same order-sensitive caution for query string parameters
         # applies to headers.
-        msg_parts.append('')
+        msg_parts.append(b'')
 
         # Request expiration date (UNIX timestamp)
-        msg_parts.append(str(expiration_ts))
+        msg_parts.append(str(expiration_ts).encode('utf-8'))
         auth_header += ',expires=' + str(expiration_ts)
 
-        msg = '\n'.join(msg_parts)
+        msg = b'\n'.join(msg_parts)
         signature = hmac.new(
-            self.secret, msg=msg.encode('utf-8'), digestmod=hashlib.sha256
+            self.secret, msg=msg, digestmod=hashlib.sha256
         ).digest()
 
         auth_header += ',signature=' + str(
