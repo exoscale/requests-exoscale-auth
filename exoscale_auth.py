@@ -5,6 +5,7 @@ import hmac
 import time
 
 from base64 import standard_b64encode
+from datetime import datetime
 from urllib.parse import urlparse, parse_qs
 
 from requests.auth import AuthBase
