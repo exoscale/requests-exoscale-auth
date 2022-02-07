@@ -12,8 +12,11 @@ Usage:
 .. code-block:: python
 
     import requests
-    from exoscale_auth import ExoscaleAuth
+    from exoscale_auth import ExoscaleV2Auth
 
-    auth = ExoscaleAuth('my-key', 'my-secret')
-    response = requests.get('https://portal.exoscale.com/api/account',
+    auth = ExoscaleV2Auth("my-key", "my-secret")
+    response = requests.get("https://api-ch-gva-2.exoscale.com/v2/instance",
                             auth=auth)
+
+See also https://github.com/exoscale/python-exoscale for a higher-level
+interface.
