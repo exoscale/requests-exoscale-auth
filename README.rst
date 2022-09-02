@@ -17,6 +17,3 @@ Usage:
     auth = ExoscaleV2Auth("my-key", "my-secret")
     response = requests.get("https://api-ch-gva-2.exoscale.com/v2/instance",
                             auth=auth)
-
-See also https://github.com/exoscale/python-exoscale for a higher-level
-interface.
