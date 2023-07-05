@@ -79,7 +79,7 @@ class ExoscaleV2Auth(AuthBase):
         msg_parts.append(str(expiration_ts).encode('utf-8'))
         auth_header += ',expires=' + str(expiration_ts)
 
-        msg = b'\n'.join(msg_parts)
+        msg = b'\n'.join([part.encode() if isinstance(part, str) else part for part in msg_parts])
         signature = hmac.new(
             self.secret, msg=msg, digestmod=hashlib.sha256
         ).digest()

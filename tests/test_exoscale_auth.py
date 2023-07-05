@@ -60,3 +60,15 @@ class TestExoscaleV2Auth:
             + ',expires=' + str(self.expiration_ts)
             + ',signature=duldkM0+pgWRtUznj0rMrZauzsYOtSVLn1LCGcs7CcE='
         )
+
+    def test_sign_request_with_str_msg_parts(self):
+        auth = ExoscaleV2Auth(key=_API_KEY, secret=_API_SECRET)
+        req = requests.Request(
+            'GET',
+            'https://api.exoscale.com/v2/zone',
+            params={'k1': 'v1', 'k2': 'v2'},
+        ).prepare()
+        # explicitly set a string value to request body
+        req.body = "string body"
+        auth._sign_request(req, self.expiration_ts)
+        assert 'Authorization' in req.headers
